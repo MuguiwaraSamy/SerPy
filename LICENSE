@@ -1,0 +1,36 @@
+SerPy Academic Research License (ARL)
+-------------------------------------
+
+Copyright (c) 2025, Université Grenoble Alpes (UGA), INSERM, INP Grenoble, CNRS, and contributors.
+All rights reserved.
+
+Patent Notice:
+This software implements methods covered by the French patent application
+No. 2511096, titled "Procédé d’imagerie et produit programme d’ordinateur correspondant",
+filed on September 26, 2025 by UGA, INSERM, INP Grenoble and CNRS.
+
+The distribution of this code does NOT grant any license under the above patent.
+Use of the patented invention for commercial purposes is strictly prohibited
+without prior written authorization from the patent holders.
+
+Permission is hereby granted, free of charge, to use, copy, modify, and distribute
+this software for RESEARCH AND ACADEMIC PURPOSES ONLY, subject to the following conditions:
+
+1. The above copyright and patent notice shall be included in all copies
+   or substantial portions of the Software.
+
+2. The Software and its derivatives shall not be used for commercial gain,
+   product development, or any form of industrial exploitation.
+
+3. Any publication or presentation using this Software shall acknowledge:
+   “SerPy — Statistical single-exposure retrieval of directional dark-field (© 2025 UGA, INSERM, INP Grenoble, CNRS)”.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+For commercial licensing inquiries, please contact the Technology Transfer Office (TTO)
+of Université Grenoble Alpes or INSERM Transfert.
+
+-------------------------------------
+Version: 1.0 — October 2025

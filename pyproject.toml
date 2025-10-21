@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Serpy"
+version = "0.1.0"
+description = "Statistical single-exposure transmission & directional dark-field retrieval"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT License"}
+authors = [{name="Samy Kefs"}]
+keywords = ["x-ray", "phase-contrast", "dark-field", "speckle", "modulation-based imaging"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Image Processing"
+]
+
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.10",
+  "tqdm>=4.65",
+  "matplotlib>=3.7",
+  "numba>=0.58",
+  "fabio>=2023.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MuguiwaraSamy/SerPy.git"
+Issues = "https://github.com/MuguiwaraSamy/SerPy/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["serpy*"]
