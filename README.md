@@ -31,11 +31,11 @@ From these statistics, the method reconstructs the **directional scattering elli
 ## ⚙️ Installation
 
 ```bash
-git clone https://github.com/<your-username>/serpy.git
-cd serpy
+git clone https://github.com/MuguiwaraSamy/SerPy.git
+cd SerPy
 pip install -U pip
 pip install -e .
-
+```
 ---
 
 ## ⚠️ Patent Notice
