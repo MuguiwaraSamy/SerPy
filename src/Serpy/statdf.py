@@ -2,8 +2,10 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 from scipy.ndimage import map_coordinates, convolve
 from numba import njit
-from typing import Tuple, Optional
 from tqdm import tqdm
+from typing import Optional, Tuple, Dict, Any
+
+
 
 
 def _generate_band_coords(angle_rad: float, length: int, band_thickness: int = 1, step: float = 1.0):
@@ -50,8 +52,8 @@ def _generate_band_coords(angle_rad: float, length: int, band_thickness: int = 1
     norm_y =  np.cos(angle_rad)
     
     #Each point is given by (x, y) = t \cdot \vec{d} + o \cdot \vec{n}
-    t = np.arange(-length, length + step, step, dtype=np.float32)
-    offsets = np.linspace(-(band_thickness - 1) / 2, (band_thickness - 1) / 2, band_thickness, dtype=np.float32)
+    t = np.arange(-length, length + step, step)
+    offsets = np.linspace(-(band_thickness - 1) / 2, (band_thickness - 1) / 2, band_thickness)
     X = t[None, :] * dir_x + offsets[:, None] * norm_x
     Y = t[None, :] * dir_y + offsets[:, None] * norm_y
     return Y, X
@@ -96,35 +98,42 @@ def compute_directional_stats(data: np.ndarray, angles: np.ndarray, window_size:
     """
     
     data = np.asarray(data, dtype=np.float32)
-    
+    n = window_size
+    m = int(np.ceil(n * np.sqrt(2)))
     pad = window_size // 2
     padded = np.pad(data, pad, mode='reflect')
-    
-    windows = sliding_window_view(padded, (window_size, window_size))
-    
-    H, W = data.shape
+
+    windows = sliding_window_view(padded, (m, m))
+
+    H, W = windows.shape[0:2]
     N_ang = len(angles)
     
-    mean_result = np.zeros((H, W, N_ang + 1), dtype=np.float32)
-    std_result  = np.zeros((H, W, N_ang + 1), dtype=np.float32)
+
+    mean_result = np.zeros((H, W, N_ang + 1))
+    std_result  = np.zeros((H, W, N_ang + 1))
+
+    mid = m // 2
+    i_0 = mid - n // 2
+    i_1 = i_0 + n
     
     # Compute isotropic (non-directional) mean and std for index 0
-    mean_result[..., 0] = np.mean(windows, axis=(-2, -1))
-    std_result[..., 0]  = np.std(windows, axis=(-2, -1))
-    
-    center = window_size // 2
-    flat_windows = windows.reshape(-1, window_size, window_size)
+    mean_result[..., 0] = np.mean(windows[..., i_0:i_1, i_0:i_1], axis=(-2, -1))
+    std_result[..., 0]  = np.std(windows[..., i_0:i_1, i_0:i_1], axis=(-2, -1))
+
+    # center = window_size // 2
+    centre_n = n // 2
+    flat_windows = windows.reshape(-1, m, m)
 
     for k, angle_rad in enumerate(tqdm(angles, desc="Computing directional stats", unit="angle")):
 
         # Generate relative coordinates of the oriented band (within the window)
-        Yrel, Xrel = _generate_band_coords(angle_rad, center, band_thickness, step=step)
-        coords = np.stack([Yrel + center, Xrel + center], axis=0).reshape(2, -1)
+        Yrel, Xrel = _generate_band_coords(angle_rad, centre_n, band_thickness, step=step)
+        coords = np.stack([Yrel + mid, Xrel + mid], axis=0).reshape(2, -1)
         
         # For each window, interpolate pixel values along the band at subpixel precision
-        # order=3 → cubic interpolation; mode='reflect' → smooth edges
+        # order=1 → linear interpolation; mode='reflect' → smooth edges
         interpolated = np.array([
-            map_coordinates(win, coords, order=3, mode='reflect')
+            map_coordinates(win, coords, order=1, mode='nearest')
             for win in flat_windows
         ], dtype=np.float32)
         
@@ -167,7 +176,7 @@ def _df(std_r, std_s, T):
         DF = | 1 - (std_s / std_r) * (1 / T) |
     """
     
-    return np.abs(1.0 - (std_s / (std_r + 1e-12)) * (1.0 / (T + 1e-12)))
+    return np.abs(1.0 - (std_s / (std_r)) * (1.0 / (T)))
 
 def compute_df(std_ref: np.ndarray, std_sample: np.ndarray, mean_ref: np.ndarray, mean_sample: np.ndarray):
     """
@@ -200,13 +209,14 @@ def compute_df(std_ref: np.ndarray, std_sample: np.ndarray, mean_ref: np.ndarray
         Local transmission map, defined as `mean_sample / mean_ref`.
     """
     # Compute the local transmission map (sample intensity normalized by reference)
-    transmission = mean_sample / (mean_ref + 1e-12)
+    transmission = mean_sample / (mean_ref)
     
     Df_result = _df(std_ref, std_sample, transmission)
     
     # Replace non-finite values (NaN or inf) with a small constant to ensure numerical stability
     Df_result = np.where(~np.isfinite(Df_result), 1e-6, Df_result)
     transmission = np.where(~np.isfinite(transmission), 1e-6, transmission)
+    Df_result = np.where(Df_result == 0, 1e-6, Df_result)
     
     return Df_result, transmission
 
@@ -350,10 +360,10 @@ def _cart_to_pol_numba(coeffs):
         
         
     # Eccentricity
-    r = (bp / (ap + 1e-12))**2
+    r = (bp / ap )**2
     if r > 1:
         r = 1 / r
-    e = np.sqrt(max(0.0, 1 - r))
+    e = np.sqrt(1 - r)
 
     # Degenerate guard
     if ap == 0 or bp == 0:
@@ -370,9 +380,6 @@ def _cart_to_pol_numba(coeffs):
         phi += np.pi/2
 
     # Normalize to [0, π)
-    phi = phi % np.pi
-    
-    phi +=np.pi/2
     phi = phi % np.pi
     
     return x0, y0, ap, bp, e, phi
@@ -476,7 +483,7 @@ def fit_ellipses(Df_results: np.ndarray, sin_angles: np.ndarray, cos_angles: np.
     phi : np.ndarray
         2D map (H, W) of ellipse orientation angles in radians, within [0, π).
     """
-    return _fit_all_ellipses(Df_results.astype(np.float32), sin_angles.astype(np.float32), cos_angles.astype(np.float32))
+    return _fit_all_ellipses(Df_results, sin_angles, cos_angles)
 
 def ellipse_params_to_maps(minor_axis, major_axis, phi):
     minor_axis = minor_axis.astype(np.float32)
@@ -525,10 +532,10 @@ def _gaussian_kernel(sigma: float):
     g : np.ndarray
         2D array (float32) representing the normalized Gaussian kernel.
     """
-    size = int(2 * round(sigma * 3))
+    size = 2 * round(sigma * 3)
     if size < 3:
         size = 3
-    x = np.arange(-size//2, size//2 + 1, dtype=np.float32)
+    x = np.arange(-size//2, size//2 + 1)
     g1 = np.exp(-x**2 / (2 * sigma**2))
     g = np.outer(g1, g1).astype(np.float32)
     g /= g.sum()
@@ -571,10 +578,10 @@ def corrected_orientation(theta: np.ndarray, sigma: float = 5.0):
     
     c = np.cos(2.0 * theta)
     s = np.sin(2.0 * theta)
-    
-    cc = convolve(c, gaussian, mode="constant")
-    ss = convolve(s, gaussian, mode="constant")
-    
+    mask = (theta !=0).astype(np.float32)
+    cc = convolve(c*mask, gaussian, mode="constant")
+    ss = convolve(s*mask, gaussian, mode="constant")
+
     norm = np.hypot(cc, ss)
     norm[norm == 0] = 1e-6
     
@@ -633,10 +640,6 @@ def dfr_pipeline(
           "phi": phi,                  # (H, W) raw
           "phi_s": phi_s,              # (H, W) smoothed
           "sat": sat,                  # (H, W) orientation coherence magnitude
-          "ecc_n": ecc_n,              # (H, W) normalized eccentricity
-          "inten_n": inten_n,          # (H, W) normalized intensity
-          "area_n": area_n,            # (H, W) normalized area
-          "ecc": ecc, "inten": inten, "area": area,  # unnormalized maps
           # optional intermediates:
           "mean_s": ..., "std_s": ..., "mean_r": ..., "std_r": ...
         }
@@ -671,9 +674,7 @@ def dfr_pipeline(
     phi_s, sat = corrected_orientation(phi, sigma=smooth_sigma)
     print("Corrected orientation map and computed saturation map.")
     
-    # 6) Derived maps (eccentricity, intensity, area)
-    ecc_n, inten_n, area_n, ecc, inten, area = ellipse_params_to_maps(min_, maj, phi)
-    print("Computed derived maps: eccentricity, intensity, area.")
+
     out = {
         "angles": angles,
         "Non-oriented Df": Df_res[..., 0],
@@ -684,9 +685,6 @@ def dfr_pipeline(
         "Orientation": phi,
         "Corrected Orientation": phi_s,
         "saturation": sat,
-        "eccentricity": ecc,
-        "intensity": inten,
-        "area": area,
     }
 
     if return_intermediates:
@@ -698,8 +696,6 @@ def dfr_pipeline(
     return out
 
 
-from typing import Optional, Tuple, Dict, Any
-import numpy as np
 
 def retrieval_Algorithm(
     img: np.ndarray,
@@ -789,9 +785,6 @@ def retrieval_Algorithm(
         - "Orientation" : raw ellipse orientation (H, W)
         - "Corrected Orientation" : smoothed orientation (H, W)
         - "saturation" : local angular coherence (H, W)
-        - "eccentricity" : local anisotropy (H, W)
-        - "intensity" : overall scattering strength (H, W)
-        - "area" : total ellipse area (H, W)
         - (optionally) "mean_s", "std_s", "mean_r", "std_r" if `return_intermediates=True`
 
     Notes
@@ -833,6 +826,7 @@ def retrieval_Algorithm(
             raise ValueError("`img` contains NaN/Inf; clean or disable `strict_finite`.")
         if not np.all(np.isfinite(ref)):
             raise ValueError("`ref` contains NaN/Inf; clean or disable `strict_finite`.")
+        
 
     # ------------ parameter assertions ------------
     if not isinstance(window_size, int) or window_size < 3 or window_size % 2 == 0:
