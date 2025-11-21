@@ -28,18 +28,47 @@ From these statistics, the method reconstructs the **directional scattering elli
 
 ---
 
+
+
 ## ⚙️ Installation
 
-### ▶️ From PyPI (recommended)
+⚠️ **Important — Create a dedicated Python environment**
+
+`SerPy-X` relies on `numba`, which is **not yet compatible with Python 3.14**.  
+Therefore, it is **strongly recommended** to install SerPy-X inside a dedicated environment  
+using a compatible Python version (≥3.9 and <3.14), for example Python 3.12.
+
+---
+
+### ▶️ Option 1 — Install from PyPI (recommended)
+
+#### 🔹 Using conda
 ```bash
+conda create -n serpy-env python=3.12
+conda activate serpy-env
+
+pip install serpy_x
+```
+
+### 🔹 Using venv (standard virtual environment)
+```bash
+python3.12 -m venv serpy-env
+source serpy-env/bin/activate
+
+pip install --upgrade pip
 pip install serpy_x
 ``` 
 ### ▶️ From source
 ```bash
 git clone https://github.com/MuguiwaraSamy/SerPy.git
 cd SerPy
-pip install -U pip
-pip install -e .
+
+# Create a compatible Python environment first
+conda create -n serpy-dev python=3.12
+conda activate serpy-dev
+
+pip install --upgrade pip
+pip install -e .    
 ```
 ---
 
@@ -66,6 +95,14 @@ out = retrieval_Algorithm(img, ref, n_angles=19, window_size=5)
 | `saturation` | Local angular coherence or stability of the orientation field |
 | *(optionally)* `mean_s`, `std_s`, `mean_r`, `std_r` | Intermediate directional statistics (sample/reference means and standard deviations), included if `return_intermediates=True` |
 ---
+
+## 📘 Full Example Notebook
+
+A complete, end-to-end demonstration of the SerPy-X pipeline is provided in: 
+`/examples/exemples.ipynb`
+
+---
+
 ## ⚠️ Patent Notice
 
 A patent application covering the underlying method and algorithm has been filed by the author(s):
