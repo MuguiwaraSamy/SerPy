@@ -1,3 +1,4 @@
+__version__ = "0.1.3"
 from .statdf import (
     compute_directional_stats,
     compute_df,

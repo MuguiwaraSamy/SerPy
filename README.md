@@ -1,27 +1,7 @@
 # 🌀 SerPy — Statistical single-exposure Retrieval of directional dark-field in PYthon
 
-[![PyPI version](https://img.shields.io/pypi/v/serpy_x.svg?color=3776AB&label=PyPI&logo=pypi)](https://pypi.org/project/serpy_x/)
-[![Python versions](https://img.shields.io/pypi/pyversions/serpy_x.svg?logo=python&logoColor=white)](https://pypi.org/project/serpy_x/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active-success.svg)](https://github.com/MuguiwaraSamy/SerPy)
-
----
-
 **SerPy** implements a **statistical single-exposure framework** for retrieving **transmission**, **isotropic dark-field**, and **directional dark-field (DF)** signals from a *single* pair of images (reference and sample).  
-It is compatible with both **modulation-based**, **speckle-based**, **single-grid**, **edge-illumination**, and **grating-based** X-ray imaging techniques.
-
----
-
-## 📚 Table of Contents
-1. [Overview](#-overview)
-2. [Key Features](#️-key-features)
-3. [Installation](#-installation)
-4. [Quickstart Example](#-quickstart-example)
-5. [Output Maps](#-output-maps)
-6. [Example Dataset & Notebook](#-example-dataset-and-jupyter-notebook)
-7. [Patent Notice](#️-patent-notice)
-8. [License](#-license)
-9. [Contact](#-contact)
+It is compatible with both **modulation-based**, **speckle-based**, **single grid**, **edge illumination**, and **grating-based** X-ray imaging techniques.
 
 ---
 
@@ -31,8 +11,8 @@ Conventional dark-field imaging requires multiple phase steps or modulator posit
 **SerPy** eliminates this need by relying on **local contrast statistics** computed within small sliding windows.  
 From these statistics, the method reconstructs the **directional scattering ellipse** at each pixel, yielding quantitative maps of:
 
-- **Transmission** $T(\mathbf{r})$
-- **Isotropic dark-field** $D_f(\mathbf{r})$
+- **Transmission** $ T(\mathbf{r})$
+- **Isotropic dark-field** $ D_f(\mathbf{r}) $
 - **Directional dark-field**: orientation, anisotropy, and magnitude
 
 ---
@@ -44,7 +24,7 @@ From these statistics, the method reconstructs the **directional scattering elli
 - 🔹 **Directional dark-field extraction** via ellipse fitting in polar space  
 - 🔹 **Orientation smoothing** using circular Gaussian filtering  
 - 🔹 **Vectorized & Numba-accelerated** kernels for high performance  
-- 🔹 **Compatible with** modulation-based, speckle-based, single-grid, edge-illumination, and grating-based setups  
+- 🔹 **Compatible with** modulation-based, speckle-based, single grid, edge illumination, grating-based setups  
 
 ---
 
@@ -53,15 +33,14 @@ From these statistics, the method reconstructs the **directional scattering elli
 ### ▶️ From PyPI (recommended)
 ```bash
 pip install serpy_x
-```
+``` 
 ### ▶️ From source
-```bash 
+```bash
 git clone https://github.com/MuguiwaraSamy/SerPy.git
 cd SerPy
 pip install -U pip
 pip install -e .
 ```
-
 ---
 
 ## 🧠 Quickstart Example
@@ -72,14 +51,8 @@ from Serpy.statdf import retrieval_Algorithm
 
 # img, ref : 2D numpy arrays (sample and reference)
 out = retrieval_Algorithm(img, ref, n_angles=19, window_size=5)
-
 ```
-
 ---
-
-## 🧩 Output Maps
-
-The function returns a dictionary containing:
 | Key | Description |
 |-----|--------------|
 | `angles` | Array of sampled orientation angles (in radians) used for the directional analysis |
@@ -93,44 +66,21 @@ The function returns a dictionary containing:
 | `saturation` | Local angular coherence or stability of the orientation field |
 | *(optionally)* `mean_s`, `std_s`, `mean_r`, `std_r` | Intermediate directional statistics (sample/reference means and standard deviations), included if `return_intermediates=True` |
 ---
-
-## 📊 Example Dataset and Jupyter Notebook
-
-Two experimental datasets are provided to illustrate the retrieval workflow:
-
-- **Random modulation pattern** (aperiodic structure)  
-- **Hexagonal modulation pattern** (periodic structure)
-
-Both datasets consist of **carbon fiber tubes** oriented at different angles, used in the validation experiments presented in the publication.
-
-An **interactive Jupyter notebook** (`examples/example.ipynb`) demonstrates the full use of the `retrieval_Algorithm()` function.
-
---- 
-
 ## ⚠️ Patent Notice
 
 A patent application covering the underlying method and algorithm has been filed by the author(s):
-“Procédé d’imagerie et produit programme d’ordinateur correspondant”, filed on September 26, 2025.
+**"Procédé d’imagerie et produit programme d’ordinateur correspondant"**, filed on September 26, 2025.
 
-Publication of this code under the MIT license does not grant any license or rights
-to practice the patented invention.
-Use of this software for research and non-commercial purposes is permitted under the terms of the MIT License.
+The publication of this code under the MIT license does **not** grant any license or rights
+to practice the patented invention.  
+Use of this software for **research and non-commercial purposes** is permitted under the terms of the MIT License.  
 Any commercial use of the patented method requires a separate license from the patent holder.
 
----
+⸻
 
-## 📜 License
+📜 License
 
 Distributed under the MIT License.
 © 2025 Samy Kefs. All rights reserved.
-See LICENSE for more information.
 
----
-
-📬 Contact
-
-👤 Author: Samy Kefs
-📧 samy.kefs@inserm.fr
-🔗 GitHub — MuguiwaraSamy
-
----
+⸻

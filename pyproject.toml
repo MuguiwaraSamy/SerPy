@@ -1,39 +1,81 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core>=3.11,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
-name = "Serpy"
-version = "0.1.0"
-description = "Statistical single-exposure transmission & directional dark-field retrieval"
+name = "SerPy-X"
+dynamic = ["version"]
+description = "Statistical single-exposure retrieval of transmission, isotropic and directional dark-field signals for X-ray imaging"
 readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT License"}
-authors = [{name="Samy Kefs"}]
-keywords = ["x-ray", "phase-contrast", "dark-field", "speckle", "modulation-based imaging"]
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
-  "Intended Audience :: Science/Research",
-  "Topic :: Scientific/Engineering :: Image Processing"
+requires-python = ">=3.9,<3.14"
+license = { file = "LICENSE" }
+
+authors = [
+  { name = "Samy Kefs", email = "samy.kefs@inserm.fr" }
 ]
 
+# --- Dépendances principales (runtime) ---
 dependencies = [
   "numpy>=1.23",
   "scipy>=1.10",
-  "tqdm>=4.65",
   "matplotlib>=3.7",
-  "numba>=0.58",
-  "fabio>=2023.5.0",
+  "h5py>=3.8",
+  "numba>=0.57; python_version < '3.14'",
+  "tqdm>=4.65",
+  "fabio>=0.15",
+]
+
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Scientific/Engineering :: Physics",
+  "License :: Other/Proprietary License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent"
 ]
 
 [project.urls]
-Homepage = "https://github.com/MuguiwaraSamy/SerPy.git"
+Homepage = "https://github.com/MuguiwaraSamy/SerPy"
+Documentation = "https://samykefs.github.io/SerPy"
 Issues = "https://github.com/MuguiwaraSamy/SerPy/issues"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["serpy*"]
+
+
+# --- Module source : import Serpy ---
+[tool.flit.module]
+name = "Serpy"
+
+# --- Fichiers inclus/exclus de la distribution ---
+[tool.flit.sdist]
+include = [
+  "src/Serpy/",
+  "README.md",
+  "LICENSE",
+]
+exclude = [
+  "examples/",
+  "data/",
+]
+
+# --- Configuration Ruff (linting rapide) ---
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E","F","I","UP","B","C4","SIM"]
+ignore = ["E501"]
+
+# --- Configuration Mypy (analyse de type statique) ---
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
+ignore_missing_imports = true
+strict_optional = true
