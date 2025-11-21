@@ -1,5 +1,13 @@
 # 🌀 SerPy — Statistical single-exposure Retrieval of directional dark-field in PYthon
 
+[![PyPI version](https://img.shields.io/pypi/v/serpy_x.svg?color=3776AB&label=PyPI&logo=pypi)](https://pypi.org/project/serpy_x/)
+[![Python versions](https://img.shields.io/pypi/pyversions/serpy_x.svg?logo=python&logoColor=white)](https://pypi.org/project/serpy_x/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-active-success.svg)](https://github.com/MuguiwaraSamy/SerPy)
+
+---
+
+
 **SerPy** implements a **statistical single-exposure framework** for retrieving **transmission**, **isotropic dark-field**, and **directional dark-field (DF)** signals from a *single* pair of images (reference and sample).  
 It is compatible with both **modulation-based**, **speckle-based**, **single grid**, **edge illumination**, and **grating-based** X-ray imaging techniques.
 
